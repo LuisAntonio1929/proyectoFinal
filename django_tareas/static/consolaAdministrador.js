@@ -1,25 +1,29 @@
-function editarUsuario(idEditar)
-{
-    console.log(idEditar)
-    /*
-    PREGUNTA 3
-    Capturar informacion del usuario desde base de datos y llenar
-    inputs dentro de la ventana modal de editar usuario, permiter que
-    el usuario pueda editar los datos. No olvida de cargar el ID en el innerHTML
-    dentro del elemento H1 cuyo id es cargaId
+function editarUsuario(idEditar) {
+    // Obtener el ID del usuario de idEditar
+    const userId = idEditar.split("editar")[1];
+    console.log(userId)
+    // Actualizar el ID del usuario en el elemento H1
+    //document.getElementById("cargaId").innerHTML = userId;
 
-    Los campos a editar son:
-    Nro de celular
-    Profesion del usuario
-
-    El resto de campos:
-    Nombre
-    Apellido
-    Email
-    Fecha Ingreso
-    Colocarlos como solo lectura (propiedad readonly en el tag HTML)
-    
-    */
+    // Realizar la solicitud fetch para obtener los datos del usuario
+    fetch(`/conseguirInfoUsuario?userId=${userId}`) // Cambia la URL según tu configuración
+        .then(response => response.json())
+        .then(data => {
+            // Llenar los campos en la ventana modal con los datos recibidos
+            document.getElementById("nombreUsuarioDetalle").value = data.firstName
+            document.getElementById("nombreUsuarioDetalle").readOnly = true // Solo lectura
+            document.getElementById("apellidoUsuarioDetalle").value = data.lastName
+            document.getElementById("apellidoUsuarioDetalle").readOnly = true // Solo lectura
+            document.getElementById("profesionUsuarioDetalle").value = data.profesionUsuario
+            document.getElementById("nroCelularDetalle").value = data.nroCelular
+            document.getElementById("emailUsuarioDetalle").value = data.emailUsuario
+            document.getElementById("tipoUsuarioDetalle").value = data.tipoUsuario
+            document.getElementById("perfilUsuarioDetalle").value = data.perfilUsuario
+            // Agrega más campos aquí con sus valores y propiedades
+        })
+        .catch(error => {
+            console.error("Error al obtener datos del usuario:", error);
+        });
 }
 
 function actualizarUsuario()

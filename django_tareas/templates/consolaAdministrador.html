@@ -149,38 +149,48 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 id="cargaId" style="display: none;"></h1>
+                <h1 id="editUserId" style="display: none;"></h1> <!-- Elemento oculto para almacenar el ID -->
                 <h5 class="modal-title">Editar usuario</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <!-- PREGUNTA 2 -->
-                <form id="formularioEditarUsuario">
-                    <div class="mb-3">
-                        <label for="nombreEdit" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="nombreEdit" readonly>
+                <div class="row form-group justify-content-around mb-3">
+                    <div class="col-5">
+                        <label>Nombre :</label>
+                        <input class="form-control" type="text" name="nombreUsuario" id="nombreUsuarioDetalle" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label for="apellidoEdit" class="form-label">Apellido:</label>
-                        <input type="text" class="form-control" id="apellidoEdit" readonly>
+                    <div class="col-5">
+                        <label>Apellido :</label>
+                        <input class="form-control" type="text" name="apellidoUsuario" id="apellidoUsuarioDetalle" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label for="emailEdit" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="emailEdit" readonly>
+                </div>
+                <div class="row form-group justify-content-around mb-3">
+                    <div class="col-5">
+                        <label>Profesion :</label>
+                        <input class="form-control" type="text" name="profesionUsuario" id="profesionUsuarioDetalle" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="fechaIngresoEdit" class="form-label">Fecha de Ingreso:</label>
-                        <input type="text" class="form-control" id="fechaIngresoEdit" readonly>
+                    <div class="col-5">
+                        <label>Email :</label>
+                        <input class="form-control" type="email" name="emailUsuario" id="emailUsuarioDetalle" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label for="nroCelularEdit" class="form-label">Número de Celular:</label>
-                        <input type="text" class="form-control" id="nroCelularEdit">
+                </div>
+                <div class="row form-group justify-content-around mb-3">
+                    <div class="col-5">
+                        <label>Tipo de usuario :</label>
+                        <input class="form-control" type="text" name="tipoUsuario" id="tipoUsuarioDetalle" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label for="profesionEdit" class="form-label">Profesión:</label>
-                        <input type="text" class="form-control" id="profesionEdit">
+                    <div class="col-5">
+                        <label>Nro de celular :</label>
+                        <input class="form-control" type="text" name="nroCelular" id="nroCelularDetalle" required>
                     </div>
-                </form>
+                </div>
+                <div class="row form-group justify-content-around mb-3">
+                    <div class="col-11">
+                        <label>Perfil del usuario :</label>
+                        <textarea class="form-control" type="text" name="perfilUsuario" id="perfilUsuarioDetalle" rows="4" readonly></textarea>
+                    </div>
+                </div>
                 <!-- Fin de PREGUNTA 2 -->
             </div>
             <div class="modal-footer">

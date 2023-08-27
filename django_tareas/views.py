@@ -11,14 +11,14 @@ import json
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
-from django.http import FileResponse
+from django.http import HttpResponse
+from io import BytesIO
 from reportlab.lib.pagesizes import portrait, A4
-from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, PageBreak, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Image, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
-from datetime import date
-from django.contrib.auth.models import User
-from .models import datosUsuario, tareasInformacion
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import portrait, A4
+from reportlab.pdfgen import canvas
 
 # Create your views here.
 def index(request):
@@ -244,16 +244,12 @@ def publicarComentario(request):
         'resp':'ok'
     })
 
-def generarReporteUsuarios(request):
-    response = FileResponse(open('reporte_usuarios.pdf', 'rb'), content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_usuarios.pdf"'
-    return response
-
 def descargarReporteUsuarios(request):
     usuarios = User.objects.exclude(username='admin')  # Excluir al usuario admin
     nombreArchivo = 'reporte_usuarios.pdf'
 
-    archivoPdf = SimpleDocTemplate(nombreArchivo, pagesize=portrait(A4))
+    buffer = BytesIO()
+    archivoPdf = SimpleDocTemplate(buffer, pagesize=portrait(A4))
 
     story = []
 
@@ -271,6 +267,11 @@ def descargarReporteUsuarios(request):
         "<para align='center'><font size='14'><b>Título: Reporte de usuarios</b></font></para>",
         Image(logo_pucp, width=140, height=80)
     ]
+
+    usuario_generador = request.user
+    tipo_usuario_generador = usuario_generador.datosusuario.tipoUsuario
+    nombre_usuario_generador = usuario_generador.get_full_name()
+    header_text.append(f"<para align='left'><font size='10'>Usuario generador: {nombre_usuario_generador} - Tipo: {tipo_usuario_generador}</font></para>")
 
     for line in header_text:
         if isinstance(line, str):
@@ -326,4 +327,23 @@ def descargarReporteUsuarios(request):
 
     archivoPdf.build(story)
 
-    return generarReporteUsuarios(request)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{nombreArchivo}"'
+    response.write(buffer.getvalue())
+    buffer.close()
+
+    return response
+
+def conseguirInfoUsuario(request):
+    userId = request.GET.get('userId')
+    usuarioSeleccionado = User.objects.get(id=userId)
+    return JsonResponse({
+        'firstName':usuarioSeleccionado.first_name,
+        'lastName':usuarioSeleccionado.last_name,
+        'tipoUsuario':usuarioSeleccionado.datosusuario.tipoUsuario,
+        'emailUsuario':usuarioSeleccionado.email,
+        'nroCelular':usuarioSeleccionado.datosusuario.nroCelular,
+        'profesionUsuario':usuarioSeleccionado.datosusuario.profesionUsuario,
+        'perfilUsuario':usuarioSeleccionado.datosusuario.perfilUsuario,
+        'idUsuario':str(usuarioSeleccionado.datosusuario.id)
+    })
