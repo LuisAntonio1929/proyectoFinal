@@ -11,6 +11,15 @@ import json
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
+from django.http import FileResponse
+from reportlab.lib.pagesizes import portrait, A4
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, PageBreak, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from datetime import date
+from django.contrib.auth.models import User
+from .models import datosUsuario, tareasInformacion
+
 # Create your views here.
 def index(request):
     if request.method == 'POST':
@@ -235,27 +244,86 @@ def publicarComentario(request):
         'resp':'ok'
     })
 
+def generarReporteUsuarios(request):
+    response = FileResponse(open('reporte_usuarios.pdf', 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_usuarios.pdf"'
+    return response
+
 def descargarReporteUsuarios(request):
-    """
-    PREGUNTA 1
-    En esta funcion debe generar un pdf con utilizando la libreria reportlab
-    Este reporte debe contener la informacion de todos los usuarios a excepcion
-    de la contraseña y debe mostrar tambien la cantidad de tareas de cada 
-    usuarios (Solo la cantidad no es necesario la descripcion de todas)
+    usuarios = User.objects.exclude(username='admin')  # Excluir al usuario admin
+    nombreArchivo = 'reporte_usuarios.pdf'
 
-    Usuarios Nombre Apellido
-    Username        Fecha de ingreso       Numero de celular
-    Cantidad de tareas              Tipo de usuario
+    archivoPdf = SimpleDocTemplate(nombreArchivo, pagesize=portrait(A4))
 
-    Agregar una descripcion de cabecera de la siguiente forma
+    story = []
 
-    Logo de DJANGO      Titulo: Reporte de usuarios     Logo de PUCP
-    Fecha de creacion del reporte
-    Cantidad de usuarios
-    Usuario que genera el reporte
-    Tipo de usuarios que genera el reporte
+    # Definir estilos de párrafos
+    styles = getSampleStyleSheet()
+    estiloTitulo = styles['Title']
+    estiloNormal = styles['Normal']
+
+    # Agregar encabezado en todas las páginas
+    logo_django = './django_tareas/static/logoApp.png'
+    logo_pucp = './django_tareas/static/logoPUCP.png'
     
-    """
-    nombreArchivo = 'reporteUsuarios.pdf'
-    reporteUsuarios=open(nombreArchivo,'rb')
-    return FileResponse(reporteUsuarios,as_attachment=True)
+    header_text = [
+        Image(logo_django, width=140, height=80),
+        "<para align='center'><font size='14'><b>Título: Reporte de usuarios</b></font></para>",
+        Image(logo_pucp, width=140, height=80)
+    ]
+
+    for line in header_text:
+        if isinstance(line, str):
+            header_para = Paragraph(line, estiloTitulo)
+        else:
+            header_para = line
+        story.append(header_para)
+    
+    story.append(Spacer(1, 20))  # Espacio entre encabezado y contenido
+
+    for usuario in usuarios:
+        datos = usuario.datosusuario
+        tareas_count = tareasInformacion.objects.filter(usuarioRelacionado=usuario).count()
+
+        # Crear tabla para el usuario actual
+        data = [
+            ['Nombre de usuario', usuario.username],
+            ['Primer nombre', datos.user.first_name],
+            ['Apellido', datos.user.last_name],
+            ['Email', datos.user.email],
+            ['Tipo de usuario', datos.tipoUsuario],
+            ['Profesion del usuario', datos.profesionUsuario],
+            ['Nro de celular', datos.nroCelular],
+            ['Fecha de ingreso', datos.fechaIngreso.strftime("%d-%m-%Y")],
+            ['Cantidad de tareas', str(tareas_count)]
+        ]
+
+        table = Table(data, colWidths=[140, 250])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+
+        # Verificar si la tabla cabe en la página actual
+        table_height = table.wrap(archivoPdf.pagesize[0], archivoPdf.pagesize[1])[1]
+        
+        if table_height > archivoPdf.pagesize[1] - 80:
+            story.append(PageBreak())  # Agregar nueva página
+            for line in header_text:
+                if isinstance(line, str):
+                    header_para = Paragraph(line, estiloTitulo)
+                else:
+                    header_para = line
+                story.append(header_para)  # Agregar encabezado en la nueva página
+
+        story.append(table)
+        story.append(Spacer(1, 20))  # Espacio entre tablas
+
+    archivoPdf.build(story)
+
+    return generarReporteUsuarios(request)
