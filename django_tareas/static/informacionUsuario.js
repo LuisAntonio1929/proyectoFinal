@@ -96,23 +96,26 @@ function getCookie(name)
 
 function finalizarTarea(idFinalizar)
 {
-    console.log(idFinalizar)
-    /*
-    Pregunta 5
-    a.
-    En esta funcion se debe de postear informacion y actualizar una celda para la tarea correspondiente
-    Al capturar el idFinalizar se puede obtener el id de la tarea a traves del metodo
-    split en javascript (investigar), con dicho id se puede armar el string 'estado' + id
-    para capturar el elemento correspondiente a la celda del estado, a traves de su propiedad 
-    innerHTML se puede cambiar el valor.
+    id = idFinalizar.split("finalizar")[1]
+    let estadoTarea = 'FINALIZADA'
+    let estadoTareaTabla = document.getElementById('estado' + id)
+    estadoTareaTabla.innerHTML = estadoTarea
 
-    b.
-    Los cambios realizados en a solo se veran en el DOM, al actualizarlo todo volvera
-    a su valor inicial, por lo que el siguiente paso es postear informacion al servidor
-    Utilizar una peticion post y acceder a la tarea con su respectivo id y cambiar el estado
-    de la tarea. Debido a que se usa la peticion fetch la pagina no se recargara,
-    pero si la recarga manualmente no observara cambios ya que el estado de la tarea
-    ha sido modificada tambien en base de datos
-    
-    */
+    datos = {
+        'estadoTarea':estadoTarea,
+    }
+
+    fetch(`/actualizarTarea?idTarea=${id}`,{
+        method:"POST",
+        headers:{
+            "X-Requested-With":"XMLHttpRequest",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body:JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+    })
 }
+

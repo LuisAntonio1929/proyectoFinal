@@ -19,5 +19,6 @@ urlpatterns = [
     path('publicarComentario',views.publicarComentario,name='publicarComentario'),
     path('descargarReporteUsuarios',views.descargarReporteUsuarios,name='descargarReporteUsuarios'),
     path('conseguirInfoUsuario',views.conseguirInfoUsuario,name='conseguirInfoUsuario'),
-    path('actualizarUsuario',views.actualizarUsuario,name='actualizarUsuario')
+    path('actualizarUsuario',views.actualizarUsuario,name='actualizarUsuario'),
+    path('actualizarTarea',views.actualizarTarea,name='actualizarTarea')
 ]
